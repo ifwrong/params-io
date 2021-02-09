@@ -2,7 +2,6 @@
 
 namespace IfWrong\ParamsIO;
 
-use IfWrong\ParamsIO\ValidateParamsIO;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -62,6 +61,9 @@ class ParamsIO
             $this->logTag = $logTag;
         }
         if ($props) {
+            if (is_array($props) && $this->camelKey) {
+                $props = $this->camelKeys($props);
+            }
             $src = $this->mget();
             if ($this->greedy) {
                 $dst = is_array($props) ? $props : $props->mget();

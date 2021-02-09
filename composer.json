@@ -1,5 +1,6 @@
 {
     "name": "ifwrong/params-io",
+    "version": "0.0.1",
     "description": "以一个对象的能里服务你的控制器，让你的laravel控制器不再复杂！",
     "type": "library",
     "license": "MIT",
@@ -9,7 +10,6 @@
             "email": "yocopop@qq.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {},
     "autoload": {
         "psr-4": {
