@@ -47,7 +47,7 @@ class ParamsIO
      * 将字段转化为驼峰形式
      * @var bool
      */
-    protected $camelKey = false;
+    protected $camelKey = true;
 
     /**
      * ParamsIO constructor.
@@ -61,22 +61,33 @@ class ParamsIO
             $this->logTag = $logTag;
         }
         if ($props) {
-            if (is_array($props) && $this->camelKey) {
-                $props = $this->camelKeys($props);
-            }
-            $src = $this->mget();
             if ($this->greedy) {
-                $dst = is_array($props) ? $props : $props->mget();
+                $dst = is_array($props) ? ($this->camelKey ? $this->camelKeys($props) : $props) : $props->mget();
             } else {
-                $keys = array_keys($src);
+                $keys = $this->keys();
                 if (is_array($props)) {
-                    $dst = Arr::only($props, $keys);
+                    $dst = Arr::only(($this->camelKey ? $this->camelKeys($props) : $props), $keys);
                 } else {
                     $dst = $props->mget($keys);
                 }
             }
             $this->mset($dst, $this->camelKey);
         }
+    }
+
+    /**
+     * 将key设置为驼峰类型
+     * @param array $vals
+     * @return array
+     */
+    public function camelKeys($vals = [])
+    {
+        $newVals = [];
+        foreach ($vals as $key => $val) {
+            $newKey = Str::camel($key);
+            $newVals[$newKey] = $val;
+        }
+        return $newVals;
     }
 
     /**
@@ -101,6 +112,19 @@ class ParamsIO
         return $vals;
     }
 
+
+    /**
+     * 获取可用的keys
+     * @param array $except
+     * @return array
+     */
+    public function keys($except = [])
+    {
+        $except = array_merge($this->except, $except);
+        $keys = array_keys(get_object_vars($this));
+        return array_diff($keys, $except);
+    }
+
     /**
      * 获取属性
      *
@@ -109,12 +133,22 @@ class ParamsIO
      */
     protected function getAttr($key)
     {
-        $method = sprintf('get%sAttr', ucfirst($key));
+        $method = $this->getAttrMethodName($key);
         if (method_exists($this, $method)) {
             return $this->$method();
         } else {
             return data_get($this, $key);
         }
+    }
+
+    /**
+     * 获取动态属性的方法名
+     * @param $key
+     * @return string
+     */
+    protected function getAttrMethodName($key)
+    {
+        return sprintf('get%sAttr', ucfirst($key));
     }
 
     /**
@@ -132,22 +166,14 @@ class ParamsIO
             foreach ($vals as $key => $val) {
                 data_set($this, $key, $val);
             }
+            $extraKeys = array_diff($this->keys(), array_keys($vals));
+            foreach ($extraKeys as $extraKey) {
+                $method = $this->getAttrMethodName($extraKey);
+                if (method_exists($this, $method)) {
+                    data_set($this, $extraKey, $this->$method());
+                }
+            }
         }
-    }
-
-    /**
-     * 将key设置为驼峰类型
-     * @param array $vals
-     * @return array
-     */
-    public function camelKeys($vals = [])
-    {
-        $newVals = [];
-        foreach ($vals as $key => $val) {
-            $newKey = Str::camel($key);
-            $newVals[$newKey] = $val;
-        }
-        return $newVals;
     }
 
     /**
@@ -176,6 +202,18 @@ class ParamsIO
     {
         $context = is_array($context) ? $context : [$context];
         Log::info($this->logTag . '|' . $message, $context);
+    }
+
+    /**
+     * 打印错误日志
+     *
+     * @param $message
+     * @param array $context
+     */
+    public function error($message, $context = [])
+    {
+        $context = is_array($context) ? $context : [$context];
+        Log::error($this->logTag . '|' . $message, $context);
     }
 
     /**
