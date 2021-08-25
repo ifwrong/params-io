@@ -38,16 +38,12 @@ trait ValidateParamsIO
     }
 
     /**
-     * 生成验证器
-     * @return \Illuminate\Contracts\Validation\Validator|Validator
+     * 验证是否成功
+     * @return bool
      */
-    public function getValidator()
+    public function fails()
     {
-        $validator = $this->validator;
-        if (is_null($validator)) {
-            $validator = $this->validator = Validator::make($this->getData(), $this->getRules(), $this->getMessages());
-        }
-        return $validator;
+        return $this->getValidator()->fails();
     }
 
     /**
@@ -69,11 +65,15 @@ trait ValidateParamsIO
     abstract public function getMessages();
 
     /**
-     * 验证是否成功
-     * @return bool
+     * 生成验证器
+     * @return \Illuminate\Contracts\Validation\Validator|Validator
      */
-    public function fails()
+    public function getValidator()
     {
-        return $this->getValidator()->fails();
+        $validator = $this->validator;
+        if (is_null($validator)) {
+            $validator = $this->validator = Validator::make($this->getData(), $this->getRules(), $this->getMessages());
+        }
+        return $validator;
     }
 }

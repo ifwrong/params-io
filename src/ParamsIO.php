@@ -106,7 +106,10 @@ class ParamsIO
             }
             $keys = array_diff($keys, $except);
             foreach ($keys as $key) {
-                $vals[$key] = $this->getAttr($key);
+                $val = $this->getAttr($key);
+                if (!is_null($val)) {
+                    $vals[$key] = $val;
+                }
             }
         }
         return $vals;
