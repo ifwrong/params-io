@@ -3,6 +3,7 @@
 namespace IfWrong\ParamsIO;
 
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
 
 trait ValidateParamsIO
 {
@@ -25,16 +26,11 @@ trait ValidateParamsIO
 
     /**
      * 入餐错误
-     * @return array
+     * @return MessageBag
      */
     public function errors()
     {
-        $result = [];
-        $validator = $this->getValidator();
-        if ($validator->fails()) {
-            $result = $validator->errors();
-        }
-        return $result;
+        return $this->getValidator()->errors();
     }
 
     /**
