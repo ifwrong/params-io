@@ -41,7 +41,7 @@ class ParamsIO
      * 初始化的时候没有定义的属性是否保存
      * @var bool
      */
-    protected $greedy = false;
+    protected $greedy = true;
 
     /**
      * 将字段转化为驼峰形式
